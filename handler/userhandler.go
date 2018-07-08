@@ -2,7 +2,11 @@ package handler
 
 import (
  "net/http"
+ "log"
+ "encoding/json"
+ "io/ioutil"
  "io"
+ "github.com/thejasbabu/userManagement/domain"
 ) 
 
 type UserHandler struct {}
@@ -12,7 +16,18 @@ func NewUserHandler() *UserHandler {
 }
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r * http.Request) {
-  io.WriteString(w, "Creating User...")
+  body, err := ioutil.ReadAll(r.Body)
+  if(err != nil) {
+    http.Error(w, err.Error(), 500)
+    return 
+  }
+  var user domain.User
+  err = json.Unmarshal(body, &user)
+  if(err != nil) { 
+    http.Error(w, err.Error(), 500)
+    return
+  }
+  log.Println(user)
 }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r * http.Request) {
