@@ -2,17 +2,19 @@ package handler
 
 import (
  "net/http"
- "log"
  "encoding/json"
  "io/ioutil"
  "io"
  "github.com/thejasbabu/userManagement/domain"
+ "github.com/thejasbabu/userManagement/repository"
 ) 
 
-type UserHandler struct {}
+type UserHandler struct {
+    Repository repository.UserRepository
+}
 
-func NewUserHandler() *UserHandler {
-	return &UserHandler{}
+func NewUserHandler(repository repository.UserRepository) *UserHandler {
+	return &UserHandler{Repository: repository}
 }
 
 func (h UserHandler) CreateUser(w http.ResponseWriter, r * http.Request) {
@@ -27,7 +29,11 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r * http.Request) {
     http.Error(w, err.Error(), 500)
     return
   }
-  log.Println(user)
+  err = h.Repository.Write(user)
+  if(err != nil) {
+    http.Error(w, err.Error(), 500)
+    return
+  }
 }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r * http.Request) {

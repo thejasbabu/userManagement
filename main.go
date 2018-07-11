@@ -6,27 +6,23 @@ import
     "net/http"
     "github.com/gorilla/mux"
     "github.com/thejasbabu/userManagement/handler"
+    "github.com/thejasbabu/userManagement/config"
+    "github.com/thejasbabu/userManagement/repository"
     "github.com/kelseyhightower/envconfig"
 )
 
-type Config struct {
-    AppPort           int
-    MgDbURL           string
-    MgDbName          string
-    UserMgCollection  string
-}
-
 func main() {
-    var config Config
+    var config config.EnvConfig
     err := envconfig.Process("UM", &config)
     if err != nil {
       log.Fatal(err.Error())
     }
     router := mux.NewRouter()
-    userHandler := handler.NewUserHandler()
+    repo := repository.NewUserRepository(config.MgDbURL, config.MgDbName, config.MgUserCollection) 
+    userHandler := handler.NewUserHandler(*repo)
     router.HandleFunc("/user", userHandler.GetUsers).Methods("GET")
     router.HandleFunc("/user/{id}", userHandler.GetUser).Methods("GET")
     router.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
     router.HandleFunc("/user/{id}", userHandler.DeleteUser).Methods("DELETE")
-    log.Fatal(http.ListenAndServe(config.AppPort, router))
+    log.Fatal(http.ListenAndServe(":" + config.AppPort, router))
 }

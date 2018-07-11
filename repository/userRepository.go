@@ -2,33 +2,34 @@ package repository
 
 import (
   "gopkg.in/mgo.v2"
-  "gopkg.in/mgo.v2/bson"
   "github.com/thejasbabu/userManagement/domain"
   "errors"
   "log"
 )
 
-type UserRepository struct {}
-
-func NewUserRepository() *UserRepository{
-  return &UserRepository{}
+type UserRepository struct {
+    DbUrl           string
+    DbName          string
+    DbCollection    string
 }
 
-func (r UserRepository) write (u domain.User) {
- dbUrl := "server1.example.com,server2.example.com"
- session, err := mgo.Dial(dbUrl)
+func NewUserRepository(dbUrl string, dbName string, dbCollection string) *UserRepository{
+  return &UserRepository{DbUrl: dbUrl, DbName: dbName, DbCollection: dbCollection}
+}
+
+func (r UserRepository) Write (u domain.User) error {
+ session, err := mgo.Dial(r.DbUrl)
  if err != nil {
     log.Fatal(err)
     return errors.New("Cannot talk to database")
   }
   defer session.Close()
-  database := "test"
-  userCollection := "people"
-  collection := session.DB(database).C(userCollection)
-  err := collection.Insert(u) 
+  collection := session.DB(r.DbName).C(r.DbCollection)
+  err = collection.Insert(u) 
   if err != nil {
      log.Fatal(err)
      return errors.New("Cannot insert user data") 
    }
    log.Println("Successfully added the user")
+   return nil
 }
