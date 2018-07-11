@@ -20,9 +20,9 @@ func main() {
     router := mux.NewRouter()
     repo := repository.NewUserRepository(config.MgDbURL, config.MgDbName, config.MgUserCollection) 
     userHandler := handler.NewUserHandler(*repo)
-    router.HandleFunc("/user", userHandler.GetUsers).Methods("GET")
-    router.HandleFunc("/user/{id}", userHandler.GetUser).Methods("GET")
+    router.HandleFunc("/user/{page}", userHandler.GetUsers).Methods("GET")
     router.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
+    router.HandleFunc("/user/{id}", userHandler.GetUser).Methods("GET")
     router.HandleFunc("/user/{id}", userHandler.DeleteUser).Methods("DELETE")
     log.Fatal(http.ListenAndServe(":" + config.AppPort, router))
 }

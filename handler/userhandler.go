@@ -5,8 +5,11 @@ import (
  "encoding/json"
  "io/ioutil"
  "io"
+ "log"
+ "strconv"
  "github.com/thejasbabu/userManagement/domain"
  "github.com/thejasbabu/userManagement/repository"
+ "github.com/gorilla/mux"
 ) 
 
 type UserHandler struct {
@@ -34,13 +37,32 @@ func (h UserHandler) CreateUser(w http.ResponseWriter, r * http.Request) {
     http.Error(w, err.Error(), 500)
     return
   }
+  log.Println("User created successfully")
+  w.WriteHeader(http.StatusCreated)
+}
+
+func (h UserHandler) GetUsers(w http.ResponseWriter, r * http.Request) {  
+  vars := mux.Vars(r)
+  page, err := strconv.Atoi(vars["page"])
+  if(err != nil) {
+    http.Error(w, err.Error(), 500)
+    return 
+  }
+
+  users, err := h.Repository.PaginatedUsers(page)
+  
+  if(err != nil) {
+    http.Error(w, err.Error(), 500)
+    return
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  json.NewEncoder(w).Encode(users)
+  log.Println("Users data retrieved successfully")
 }
 
 func (h UserHandler) GetUser(w http.ResponseWriter, r * http.Request) {
-  io.WriteString(w, "Getting User...")
-}
-
-func (h UserHandler) GetUsers(w http.ResponseWriter, r * http.Request) {
   io.WriteString(w, "Getting Users...")
 }
 
